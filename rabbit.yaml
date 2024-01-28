@@ -1,0 +1,147 @@
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   labels:
+#     app: rabbit-server
+#   name: rabbit-server
+# spec:
+#   replicas: 1
+#   selector:
+#     matchLabels:
+#       app: rabbit-server
+#   template:
+#     metadata:
+#       labels:
+#         app: rabbit-server
+#     spec:
+#       containers:
+#       - image: rabbitmq:3-management
+#         name: rabbit-server
+#         volumeMounts:
+#         - name: rabbitmq-pv
+#           mountPath: /var/lib/rabbitmq
+#       volumes:
+#       - name: rabbitmq-pv
+#         persistentVolumeClaim:
+#           claimName: pv-claim
+# ---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: rabbit-server
+#   namespace: default
+# spec:
+#   selector:
+#     app: rabbit-server
+#   type: NodePort
+#   ports:
+#   - name: "5672"
+#     port: 5672
+#     targetPort: 5672
+#   - name: "5673"
+#     port: 5673
+#     targetPort: 5672
+#   - name: "15672"
+#     port: 15672
+#     targetPort: 15672
+#     nodePort: 31672
+
+
+# # apiVersion: apps/v1
+# # kind: StatefulSet
+# # metadata:
+# #   name: rabbit-server
+# #   namespace: default
+# # spec:
+# #   selector:
+# #     matchLabels:
+# #       app: rabbit-server # has to match .spec.template.metadata.labels
+# #   serviceName: "rabbit-server"
+# #   replicas: 1 # by default is 1
+# #   template:
+# #     metadata:
+# #       labels:
+# #         app: rabbit-server # has to match .spec.selector.matchLabels
+# #     spec:
+# #       terminationGracePeriodSeconds: 10
+# #       containers:
+# #       - name: rabbit-server
+# #         image: rabbitmq:3-management
+# #         ports:
+# #         - containerPort: 5672
+# #         - containerPort: 1567
+# #         - containerPort: 5673
+# #         volumeMounts:
+# #         - name: data
+# #           mountPath: /var/rabbitmq
+# #       volumes:
+# #       - name: data
+# #         persistentVolumeClaim:
+# #           claimName: pv-claim
+
+# # ---
+# # apiVersion: v1
+# # kind: Service
+# # metadata:
+# #   name: rabbit-server
+# #   namespace: default
+# # spec:
+# #   selector:
+# #     app: rabbit-server
+# #   ports:
+# #   - name: "amqp"
+# #     port: 5672
+# #     targetPort: 5672
+# #   - name: "http"
+# #     port: 15672
+# #     targetPort: 1567
+# #   - name: "tcp"
+# #     port: 5673
+# #     targetPort: 5673
+
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rabbitmq
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rabbitmq
+  template:
+    metadata:
+      labels:
+        app: rabbitmq
+    spec:
+      containers:
+      - name: rabbitmq
+        image: rabbitmq:latest
+        ports:
+        - containerPort: 5672
+        - containerPort: 15672
+        volumeMounts:
+        - name: rabbitmq-persistent-storage
+          mountPath: /var/lib/rabbitmq
+      volumes:
+      - name: rabbitmq-persistent-storage
+        persistentVolumeClaim:
+          claimName: pv-claim
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq-service
+spec:
+  selector:
+    app: rabbitmq
+  ports:
+    - name: "amqp"
+      protocol: TCP
+      port: 5672
+      targetPort: 5672
+    - name:   "tcp"
+      protocol: TCP
+      port: 15672
+      targetPort: 15672

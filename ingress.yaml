@@ -1,0 +1,47 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: example-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  rules:
+    - host: local-api.quara.ai
+      http:
+        paths:
+          - path: /humantorch(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: humantorch
+                port:
+                  number: 4002
+          - path: /thor(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: thor
+                port:
+                  number: 4002
+          - path: /hulk(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: hulk
+                port:
+                  number: 4002
+          - path: /ironman(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: ironman
+                port:
+                  number: 4002
+          - path: /falcon(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: falcon
+                port:
+                  number: 4002

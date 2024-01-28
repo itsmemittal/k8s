@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: thanos
+  name: thanos
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: thanos
+  template:
+    metadata:
+      labels:
+        app: thanos
+    spec:
+      containers:
+      - image: thanos:latest
+        name: thanos
+        imagePullPolicy: Never
+        env:
+          - name: AMQP_URL
+            value: "AMQP://rabbit-server:5672"
+          - name: HULK_GRPC_URL
+            value: "hulk:8002"
+          - name: THOR_GRPC_URL
+            value: "thor:8002"
+          - name: REDIS_URL
+            value: 'redis://redis-server:6379'
+          - name: IRON_MAN_GRPC_URL
+            value: 'ironman:8002'
+          - name: THANOS_GRPC_URL
+            value: 'thanos:8002'
+          - name: GALACTUS_GRPC_URL
+            value: 'galactus:8002'
+          - name: FALCON_GRPC_URL
+            value: 'falcon:8002'
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: thanos
+  namespace: default
+spec:
+  selector:
+    app: thanos
+  type: ClusterIP
+  ports:
+  - name: thanos
+    protocol: TCP
+    port: 4002
+    targetPort: 4002
